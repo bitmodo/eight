@@ -1,3 +1,6 @@
+# Build files
+build/
+
 # Project files
 *.code-workspace
 
@@ -33,3 +36,6 @@
 *.exe
 *.out
 *.app
+
+# Antlr plugin generated files
+lib/.antlr/
