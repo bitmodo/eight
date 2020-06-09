@@ -1,4 +1,4 @@
-project('eight', 'cpp',
+project('eight', 'c', 'cpp',
     license: 'MIT',
     meson_version: '>= 0.54.1',
     default_options : ['cpp_std=c++17'],

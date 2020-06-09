@@ -4,11 +4,9 @@
 #include "eight/ast.h"
 
 namespace Eight {
-    namespace AST {
-        class Statement : public AST {
+    class Statement : public AST {
 
-        };
-    }
+    };
 }
 
 #endif

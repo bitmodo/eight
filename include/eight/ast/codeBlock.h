@@ -4,11 +4,9 @@
 #include "eight/ast.h"
 
 namespace Eight {
-    namespace AST {
-        class CodeBlock : public AST {
+    class CodeBlock : public AST {
 
-        };
-    }
+    };
 }
 
 #endif

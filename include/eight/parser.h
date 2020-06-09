@@ -1,5 +1,9 @@
-#ifndef EIGHT_PARSER_PARSER_H
-#define EIGHT_PARSER_PARSER_H
+#ifndef EIGHT_PARSER_H
+#define EIGHT_PARSER_H
+
+#include "api.h"
+
+#ifdef __cplusplus
 
 #include <istream>
 #include <string>
@@ -7,23 +11,35 @@
 namespace Eight {
     class AST;
 
-    namespace Parser {
-        class Token;
-    }
+    class Token;
 
     struct Parse {
-        std::string name;
-        std::istream in;
+        const std::string m_name;
+        const std::istream * m_in;
 
-        std::string file;
+        std::string m_file;
     public:
-        std::string name(void);
+        Parse(const std::string, const std::istream *);
 
-        std::string find(Parser::Token);
+        inline const std::string& name() const {
+            return m_name;
+        }
     };
 
-    Parse * parse(std::string, std::istream);
-    Parse * parseFile(std::string);
+    Parse * parse(const std::string, const std::istream *);
+    Parse * parseFile(const std::string);
 }
+
+#  define EIGHT_PARSER Eight::Parse
+
+#else
+
+struct Parse;
+
+#  define EIGHT_PARSER Parse
+
+#endif
+
+HEDLEY_C_DECL EIGHT_API EIGHT_PARSER * ParseEightFile(const char *);
 
 #endif

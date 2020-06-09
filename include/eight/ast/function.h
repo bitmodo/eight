@@ -6,13 +6,13 @@
 #include "eight/ast.h"
 
 namespace Eight {
-    namespace AST {
-        class Function : public AST {
-            std::string name;
-        public:
-            std::string name(void);
-        };
-    }
+    class Function : public AST {
+        const std::string m_name;
+    public:
+        inline const std::string name(void) const {
+            return m_name;
+        }
+    };
 }
 
 #endif

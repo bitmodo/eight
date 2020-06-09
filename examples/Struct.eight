@@ -1,0 +1,13 @@
+struct Foo {
+    public var a: i8
+    public var b: i8
+}
+
+func main() {
+    let foo: Foo = new Foo()
+
+    foo.a = 40
+    foo.b = 100
+
+    printf("a: %d, b: %d", foo.a, foo.b)
+}
