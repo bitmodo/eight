@@ -5,42 +5,86 @@
 
 #include <istream>
 #include <string>
+#include <stack>
 
 namespace Eight {
     class Token;
 
+    struct FilePos {
+        unsigned m_pos = 0;
+        unsigned m_line = 0;
+        unsigned m_col = 0;
+    public:
+        FilePos() = default;
+
+        const unsigned &position() const { return m_pos; }
+        unsigned &position() { return m_pos; }
+
+        const unsigned &line() const { return m_line; }
+        unsigned &line() { return m_line; }
+
+        const unsigned &column() const { return m_col; }
+        unsigned &column() { return m_col; }
+    };
+
     class Lexer {
         std::istream * m_in;
+        std::stack<FilePos> m_posStack;
 
         std::string input;
-        unsigned int p = 0;
-        char c;
+        FilePos pos;
+        char c = '\0';
+        bool s = true;
     public:
-        // static const char EOF = (char) -1;
-        static const int EOF_TYPE = 1;
-        static const int FUNC = 2;
-        static const int LPAREN = 3;
-        static const int RPAREN = 4;
-        static const int LBRACE = 5;
-        static const int RBRACE = 6;
-        static const int IDENTIFIER = 7;
-        static const int STRING = 8;
-
         Lexer(std::istream *);
+        ~Lexer();
 
-        void consume();
+        inline const FilePos &position() const {
+            return pos;
+        }
 
-        void match(char);
+        void push();
+        void pop();
+        void popSeek();
 
-        Token * func();
+        void seek(std::streampos);
 
-        Token * lparen();
+        char consume();
+        char consumeStart();
+        const std::string consume(unsigned);
 
-        Token * rparen();
+        const std::string look(unsigned = 1);
+        const std::string look(unsigned, unsigned);
 
-        Token * lbrace();
+        bool consumeIf(char);
+        bool consumeIf(const std::string&);
 
-        Token * rbrace();
+        const std::string cleanWhitespace(const std::string&) const;
+
+        bool eof();
+        bool newLine();
+
+        bool func();
+        bool structure();
+        bool ret();
+
+        bool let();
+        bool var();
+
+        bool equals();
+        bool colon();
+        bool semicolon();
+        bool comma();
+        bool dot();
+        bool elipses();
+
+        bool lparen();
+        bool rparen();
+
+        bool lbrace();
+        bool rbrace();
+
+        bool doubleQuote();
 
         Token * identifier();
 

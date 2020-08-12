@@ -1,20 +1,26 @@
 #ifndef EIGHT_PARSER_TOKEN_H
 #define EIGHT_PARSER_TOKEN_H
 
+#include "eight/api.h"
+
 #include <string>
 
 namespace Eight {
     class Token {
-        int m_type;
-        std::string m_text;
+        const unsigned m_start;
+        const std::string m_text;
     public:
-        Token(int, std::string);
+        Token(unsigned, const std::string&);
 
-        inline const int& type() const {
-            return m_type;
+        inline const unsigned start() const noexcept {
+            return m_start;
         }
 
-        inline const std::string& text() const {
+        inline const unsigned length() const noexcept {
+            return m_text.length();
+        }
+
+        inline const std::string& text() const noexcept {
             return m_text;
         }
     };

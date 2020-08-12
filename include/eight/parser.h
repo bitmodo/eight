@@ -3,43 +3,73 @@
 
 #include "api.h"
 
-#ifdef __cplusplus
+#include "_ast_classes.h"
 
 #include <istream>
 #include <string>
+#include <vector>
 
 namespace Eight {
-    class AST;
-
     class Token;
+    class Lexer;
 
     struct Parse {
         const std::string m_name;
-        const std::istream * m_in;
+        Lexer *m_lexer;
 
-        std::string m_file;
+        PostfixExpression *postfixExpressionPrime();
     public:
-        Parse(const std::string, const std::istream *);
+        Parse(const std::string, std::istream*);
+        ~Parse();
 
-        inline const std::string& name() const {
+        inline const std::string &name() const {
             return m_name;
         }
+
+        std::vector<AST*> root();
+
+        Type *type();
+
+        Parameter *parameter();
+        Prototype *prototype();
+        CodeBlock *codeBlock();
+
+        Statement *statement();
+        std::vector<Statement*> statements();
+        ExpressionStatement *expressionStatement();
+        DeclarationStatement *declarationStatement();
+
+        ControlTransfer *controlTransfer();
+        Return *ret();
+
+        Expression *expression();
+
+        BinaryExpression *binaryExpression();
+        Assignment *assignment();
+
+        PrefixExpression *prefixExpression();
+
+        PrimaryExpression *primaryExpression();
+
+        Literal *literal();
+        String *string();
+
+        Identifier *identifier();
+
+        PostfixExpression *postfixExpression();
+        PrimaryPostfixExpression *primaryPostfixExpression();
+        Call *call();
+        ExplicitMember *explicitMember();
+
+        Declaration *declaration();
+        std::vector<Declaration*> declarations();
+        Variable *variable();
+        Function *function();
+        Struct *structure();
     };
 
-    Parse * parse(const std::string, const std::istream *);
-    Parse * parseFile(const std::string);
+    Parse *parse(const std::string, std::istream*);
+    Parse *parseFile(const std::string);
 }
-
-#  define EIGHT_PARSER Eight::Parse
-
-#else
-
-struct Parse;
-
-#  define EIGHT_PARSER Parse
-
-#endif
-
-HEDLEY_C_DECL EIGHT_API EIGHT_PARSER * ParseEightFile(const char *);
 
 #endif

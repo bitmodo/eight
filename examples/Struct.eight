@@ -1,6 +1,6 @@
 struct Foo {
-    public var a: i8
-    public var b: i8
+    var a: i8
+    var b: i8
 }
 
 func main() {
