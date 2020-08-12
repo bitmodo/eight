@@ -1,7 +1,7 @@
 project('eight', 'c', 'cpp',
     license: 'MIT',
     meson_version: '>= 0.54.1',
-    default_options : ['cpp_std=c++17'],
+    default_options : ['c_std=c11', 'cpp_std=c++17'],
     version: '0.1.0')
 
 # Prepare dependencies
