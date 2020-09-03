@@ -5,6 +5,7 @@ project('eight', 'c', 'cpp',
     version: '0.1.0')
 
 # Prepare dependencies
+thread_dep = dependency('threads')
 llvm_dep = dependency('LLVM', version: '>= 10.0', modules: ['core'])
 
 # Initialize subdirectories

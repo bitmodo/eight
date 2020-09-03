@@ -1,14 +1,5 @@
 func printf(message: i8ptr...)
 
-struct Testing {
-	var example: i8
-}
-
 func main() {
-	var test: i8ptr = "testing\n"
-	test = "test2\n"
-	printf(test)
-	let test2: i8ptr = "testing 2\n"
-	printf(test2)
 	printf("Hello world!\n")
 }
