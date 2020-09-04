@@ -5,18 +5,33 @@
 
 HEDLEY_BEGIN_C_DECLS
 
+/**
+ * @brief Get the Eight Version Major object
+ * 
+ * @return unsigned test
+ */
 HEDLEY_WARN_UNUSED_RESULT
 HEDLEY_CONST
 HEDLEY_NO_THROW
 EIGHT_API
 unsigned getEightVersionMajor();
 
+/**
+ * @brief Get the Eight Version Minor object
+ * 
+ * @return This is a test 
+ */
 HEDLEY_WARN_UNUSED_RESULT
 HEDLEY_CONST
 HEDLEY_NO_THROW
 EIGHT_API
 unsigned getEightVersionMinor();
 
+/**
+ * @brief Get the Eight Version Revision object
+ * 
+ * @return This is another test
+ */
 HEDLEY_WARN_UNUSED_RESULT
 HEDLEY_CONST
 HEDLEY_NO_THROW
@@ -29,6 +44,11 @@ HEDLEY_NO_THROW
 EIGHT_API
 unsigned getEightVersion();
 
+/**
+ * @brief Get the Eight Version String object
+ * 
+ * @return This is the final test
+ */
 HEDLEY_WARN_UNUSED_RESULT
 HEDLEY_RETURNS_NON_NULL
 HEDLEY_CONST

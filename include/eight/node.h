@@ -9,6 +9,7 @@ HEDLEY_BEGIN_C_DECLS
 
 enum nodegroup {
     NNone = (1 << 0),
+
     NDeclaration = (1 << 1),
     NStatement = (1 << 2),
 } HEDLEY_FLAGS;

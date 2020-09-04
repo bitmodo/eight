@@ -12,3 +12,6 @@ llvm_dep = dependency('LLVM', version: '>= 10.0', modules: ['core'])
 subdir('include')
 subdir('lib')
 subdir('tools')
+
+# Initialize the documentation
+subdir('docs')
