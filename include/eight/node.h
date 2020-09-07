@@ -3,6 +3,7 @@
 
 #include <eight/api.h>
 
+#include <stdbool.h>
 #include <stddef.h>
 
 HEDLEY_BEGIN_C_DECLS
@@ -12,6 +13,9 @@ enum nodegroup {
 
     NDeclaration = (1 << 1),
     NStatement = (1 << 2),
+    NExpression = (1 << 3),
+
+    NValue = (1 << 4),
 } HEDLEY_FLAGS;
 
 typedef enum nodegroup nodegroup_t;
@@ -24,16 +28,28 @@ typedef enum nodetype {
     NFunction,
     NParameter,
     NVariadic,
+
+    NCall,
+
+    NString,
 } nodetype_t;
 
 struct tokenlist;
 
+typedef struct nodelistelement nodelistelement_t;
 typedef struct nodelist nodelist_t;
 typedef struct node node_t;
 
-struct nodelist {
+struct nodelistelement {
+    struct nodelistelement* previous;
     struct node* value;
-    struct nodelist* next;
+    struct nodelistelement* next;
+};
+
+struct nodelist {
+    size_t count;
+    struct nodelistelement* first;
+    struct nodelistelement* last;
 };
 
 struct node {
@@ -48,6 +64,15 @@ struct node* createNode(nodegroup_t, nodetype_t, struct tokenlist*, nodelist_t*)
 
 EIGHT_API
 struct nodelist* createNodeList(size_t, ...);
+
+EIGHT_API
+struct nodelist* newNodeList();
+
+EIGHT_API
+bool addNodeToEnd(struct nodelist*, struct node*);
+
+EIGHT_API
+struct node* getNodeAt(struct nodelist*, size_t);
 
 EIGHT_API
 void freeNode(node_t**);

@@ -6,21 +6,19 @@
 struct token* getFunctionName(struct node* f) {
     if (HEDLEY_UNLIKELY(f->tokens == HEDLEY_NULL)) return HEDLEY_NULL;
 
-    return f->tokens->value;
+    return getTokenAt(f->tokens, 0);
 }
 
 struct nodelist* getFunctionParameters(struct node* f) {
     if (HEDLEY_UNLIKELY(f->children == HEDLEY_NULL)) return HEDLEY_NULL;
 
-    if (HEDLEY_UNLIKELY(f->children->value == HEDLEY_NULL)) return HEDLEY_NULL;
+    if (HEDLEY_UNLIKELY(getNodeAt(f->children, 0) == HEDLEY_NULL)) return HEDLEY_NULL;
 
-    return f->children->value->children;
+    return getNodeAt(f->children, 0)->children;
 }
 
 struct node* getFunctionCodeBlock(struct node* f) {
     if (HEDLEY_UNLIKELY(f->children == HEDLEY_NULL)) return HEDLEY_NULL;
 
-    if (HEDLEY_UNLIKELY(f->children->next == HEDLEY_NULL)) return HEDLEY_NULL;
-
-    return f->children->next->value;
+    return getNodeAt(f->children, 1);
 }

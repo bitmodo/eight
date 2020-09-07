@@ -163,33 +163,23 @@ void prepareParser(parser_t* p, const char* contents) {
 }
 
 struct node* parseRoot(parser_t* p) {
-    node_t* root = malloc(sizeof(node_t));
-    if (HEDLEY_UNLIKELY(root == HEDLEY_NULL)) return HEDLEY_NULL;
-
-    memset(root, 0, sizeof(node_t));
-    nodelist_t* end = HEDLEY_NULL;
+    nodelist_t* list = newNodeList();
+    if (HEDLEY_UNLIKELY(list == HEDLEY_NULL)) return HEDLEY_NULL;
 
     while (HEDLEY_LIKELY(lt(p, 0) != TEOF)) {
         node_t* n = parseFunction(p);
 
         if (HEDLEY_LIKELY(n != HEDLEY_NULL)) {
-            if (HEDLEY_UNLIKELY(end == HEDLEY_NULL)) {
-                end = malloc(sizeof(nodelist_t));
-            } else {
-                end->next = malloc(sizeof(nodelist_t));
-                end = end->next;
+            if (HEDLEY_UNLIKELY(addNodeToEnd(list, n) == false)) {
+                freeNodeList(&list);
+                return HEDLEY_NULL;
             }
-
-            if (HEDLEY_UNLIKELY(end == HEDLEY_NULL)) break;
-            memset(end, 0, sizeof(nodelist_t));
-
-            end->value = n;
         } else {
             break;
         }
     }
 
-    return root;
+    return createNode(NNone, NRoot, HEDLEY_NULL, list);
 }
 
 struct node* parseParameter(parser_t* p) {
@@ -220,24 +210,16 @@ struct node* parseParameter(parser_t* p) {
 struct node* parseParameters(parser_t* p) {
     if (HEDLEY_UNLIKELY(!match(p, TLParen))) return HEDLEY_NULL;
 
-    nodelist_t* list = malloc(sizeof(nodelist_t));
+    nodelist_t* list = newNodeList();
     if (HEDLEY_UNLIKELY(list == HEDLEY_NULL)) return HEDLEY_NULL;
 
-    nodelist_t* end = list;
-
     while (HEDLEY_LIKELY(lt(p, 0) == TIdentifier)) {
-        if (HEDLEY_LIKELY(end != list)) {
-            end->next = malloc(sizeof(nodelist_t));
-            if (HEDLEY_UNLIKELY(end->next == HEDLEY_NULL)) {
-                freeNodeList(&list);
-                return HEDLEY_NULL;
-            }
+        node_t* n = parseParameter(p);
 
-            end = end->next;
-            memset(end, 0, sizeof(nodelist_t));
+        if (HEDLEY_UNLIKELY(addNodeToEnd(list, n) == false)) {
+            freeNodeList(&list);
+            return HEDLEY_NULL;
         }
-
-        end->value = parseParameter(p);
     }
 
     if (HEDLEY_UNLIKELY(!match(p, TRParen))) {
@@ -283,6 +265,62 @@ struct node* parseFunction(parser_t* p) {
     }
     
     return createNode(NDeclaration, NFunction, tokens, nodes);
+}
+
+struct node* parseExpression(parser_t* p) {
+    if (HEDLEY_LIKELY(lt(p, 0) == TIdentifier)) return parseCall(p);
+
+    return parseLiteral(p);
+}
+
+struct node* parseCall(parser_t* p) {
+    if (HEDLEY_UNLIKELY(lt(p, 0) != TIdentifier)) return HEDLEY_NULL;
+
+    token_t* name = consumeToken(p);
+
+    if (HEDLEY_UNLIKELY(!match(p, TLParen))) {
+        freeToken(&name);
+        return HEDLEY_NULL;
+    }
+
+    nodelist_t* list = newNodeList();
+    if (HEDLEY_UNLIKELY(list == HEDLEY_NULL)) {
+        freeToken(&name);
+        return HEDLEY_NULL;
+    }
+
+    if (HEDLEY_LIKELY(lt(p, 0) != TRParen)) {
+        node_t* expression = parseExpression(p);
+        if (HEDLEY_UNLIKELY(expression == HEDLEY_NULL || addNodeToEnd(list, expression) == false)) {
+            freeToken(&name);
+            freeNodeList(&list);
+            return HEDLEY_NULL;
+        }
+
+        while (HEDLEY_LIKELY(match(p, TComma))) {
+            node_t* expression = parseExpression(p);
+            if (HEDLEY_UNLIKELY(expression == HEDLEY_NULL || addNodeToEnd(list, expression) == false)) {
+                freeToken(&name);
+                freeNodeList(&list);
+                return HEDLEY_NULL;
+            }
+        }
+    }
+
+    return createNode(NExpression, NCall, createTokenList(1, name), list);
+}
+
+struct node* parseLiteral(parser_t* p) {
+    return parseString(p);
+}
+
+struct node* parseString(parser_t* p) {
+    if (HEDLEY_UNLIKELY(lt(p, 0) == TString)) return HEDLEY_NULL;
+
+    token_t* t = consumeToken(p);
+    if (HEDLEY_UNLIKELY(t == HEDLEY_NULL)) return HEDLEY_NULL;
+
+    return createNode(NExpression | NValue, NString, createTokenList(1, t), HEDLEY_NULL);
 }
 
 void freeLookaheadlist(lookaheadlist_t* l) {

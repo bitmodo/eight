@@ -33,7 +33,6 @@ int compileEight(const char* file, struct compilation c) {
     }
 
     fprintf(stdout, "Output file: %s\n", c.outfile);
-    fprintf(stdout, "File contents:\n%s\n", file);
 
     parser_t* p = newParser();
     if (HEDLEY_UNLIKELY(!p)) {

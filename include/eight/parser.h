@@ -5,7 +5,7 @@
 
 HEDLEY_BEGIN_C_DECLS
 
-struct nodelist;
+struct node;
 
 typedef struct parser parser_t;
 
@@ -20,6 +20,27 @@ struct node* parseRoot(parser_t*);
 
 EIGHT_API
 struct node* parseFunction(parser_t*);
+
+EIGHT_API
+struct node* parseParameters(parser_t*);
+
+EIGHT_API
+struct node* parseParameter(parser_t*);
+
+EIGHT_API
+struct node* parseCodeBlock(parser_t*);
+
+EIGHT_API
+struct node* parseExpression(parser_t*);
+
+EIGHT_API
+struct node* parseCall(parser_t*);
+
+EIGHT_API
+struct node* parseLiteral(parser_t*);
+
+EIGHT_API
+struct node* parseString(parser_t*);
 
 EIGHT_API
 void freeParser(parser_t**);

@@ -22,33 +22,61 @@ struct token* createToken(tokengroup_t group, tokentype_t type, unsigned line, u
 }
 
 struct tokenlist* createTokenList(size_t count, ...) {
-    tokenlist_t* list = malloc(sizeof(tokenlist_t));
+    tokenlist_t* list = newTokenList();
     if (HEDLEY_UNLIKELY(list == HEDLEY_NULL)) return HEDLEY_NULL;
-
-    memset(list, 0, sizeof(tokenlist_t));
-    tokenlist_t* end = list;
 
     va_list args;
     va_start(args, count);
 
-    for (unsigned int i = 0; i < count; i++) {
-        if (HEDLEY_LIKELY(i != 0)) {
-            end->next = malloc(sizeof(tokenlist_t));
-            if (HEDLEY_UNLIKELY(end->next == HEDLEY_NULL)) {
-                freeTokenList(&list);
-                return HEDLEY_NULL;
-            }
-
-            end = end->next;
-            memset(end, 0, sizeof(tokenlist_t));
+    for (size_t i = 0; i < count; i++) {
+        if (HEDLEY_UNLIKELY(addTokenToEnd(list, va_arg(args, token_t*)) == false)) {
+            freeTokenList(&list);
+            return HEDLEY_NULL;
         }
-
-        end->value = va_arg(args, token_t*);
     }
 
     va_end(args);
 
     return list;
+}
+
+struct tokenlist* newTokenList() {
+    tokenlist_t* list = malloc(sizeof(tokenlist_t));
+    if (HEDLEY_UNLIKELY(list == HEDLEY_NULL)) return HEDLEY_NULL;
+
+    memset(list, 0, sizeof(tokenlist_t));
+    return list;
+}
+
+bool addTokenToEnd(struct tokenlist* list, struct token* t) {
+    tokenlistelement_t* e = malloc(sizeof(tokenlistelement_t));
+    if (HEDLEY_UNLIKELY(e == HEDLEY_NULL)) return false;
+
+    e->value = t;
+
+    if (HEDLEY_UNLIKELY(list->first == HEDLEY_NULL)) {
+        list->first = e;
+    } else {
+        e->previous = list->last;
+    }
+
+    list->last = e;
+    list->count++;
+
+    return true;
+}
+
+HEDLEY_PRIVATE
+struct token* getTokenAtInternal(tokenlistelement_t* e, size_t current, size_t index) {
+    if (HEDLEY_UNLIKELY(e == HEDLEY_NULL)) return HEDLEY_NULL;
+
+    if (current == index) return e->value;
+
+    return getTokenAtInternal(e->next, current+1, index);
+}
+
+struct token* getTokenAt(struct tokenlist* l, size_t index) {
+    return getTokenAtInternal(l->first, 0, index);
 }
 
 void freeToken(token_t** t) {
@@ -60,13 +88,21 @@ void freeToken(token_t** t) {
     *t = HEDLEY_NULL;
 }
 
-void freeTokenList(tokenlist_t** l) {
-    if (HEDLEY_LIKELY((*l)->next)) {
-        freeTokenList(&(*l)->next);
+void freeTokenListElement(tokenlistelement_t* e) {
+    if (HEDLEY_LIKELY(e->value != HEDLEY_NULL)) {
+        freeToken(&e->value);
     }
 
-    if (HEDLEY_LIKELY((*l)->value)) {
-        freeToken(&(*l)->value);
+    if (HEDLEY_LIKELY(e->next != HEDLEY_NULL)) {
+        freeTokenListElement(e->next);
+    }
+
+    free(e);
+}
+
+void freeTokenList(tokenlist_t** l) {
+    if (HEDLEY_LIKELY((*l)->first != HEDLEY_NULL)) {
+        freeTokenListElement((*l)->first);
     }
 
     free(*l);

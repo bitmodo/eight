@@ -3,6 +3,7 @@
 
 #include <eight/api.h>
 
+#include <stdbool.h>
 #include <stddef.h>
 
 HEDLEY_BEGIN_C_DECLS
@@ -44,11 +45,19 @@ typedef struct token {
     char* text;
 } token_t;
 
+typedef struct tokenlistelement tokenlistelement_t;
 typedef struct tokenlist tokenlist_t;
 
-struct tokenlist {
+struct tokenlistelement {
+    struct tokenlistelement* previous;
     struct token* value;
-    struct tokenlist* next;
+    struct tokenlistelement* next;
+};
+
+struct tokenlist {
+    size_t count;
+    struct tokenlistelement* first;
+    struct tokenlistelement* last;
 };
 
 EIGHT_API
@@ -56,6 +65,15 @@ struct token* createToken(tokengroup_t, tokentype_t, unsigned, unsigned, char*);
 
 EIGHT_API
 struct tokenlist* createTokenList(size_t, ...);
+
+EIGHT_API
+struct tokenlist* newTokenList();
+
+EIGHT_API
+bool addTokenToEnd(struct tokenlist*, struct token*);
+
+EIGHT_API
+struct token* getTokenAt(struct tokenlist*, size_t);
 
 EIGHT_API
 void freeToken(token_t**);

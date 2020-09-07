@@ -46,7 +46,7 @@ doxygen_doc = custom_target('doxygen',
     command: [doxygen, doxy_conf_output_path],
     input: [doxygen_conf, docs_common_deps],
     output: doxygen_folder_name,
-    build_by_default: true,
+    build_by_default: false,
 )
 
 # Copy the Sphinx files to the build directory
@@ -61,6 +61,6 @@ sphinx_doc = custom_target('docs',
     command: [sphinx, '-E', '-W', '-q', '-j', 'auto', meson.current_build_dir(), meson.current_build_dir() / '_build'],
     input: [sphinx_conf, sphinx_index, doxygen_doc, docs_common_deps],
     output: ['_build'],
-    build_by_default: true,
+    build_by_default: false,
     depends: [doxygen_doc],
 )
