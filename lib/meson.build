@@ -7,6 +7,7 @@ eight_src = files(
 
     'lexer.c',
     'parser.c',
+    'codegen.c',
 
     'ast/function.c',
 )

@@ -113,6 +113,7 @@ HEDLEY_PRIVATE
 token_t* consumeToken(parser_t* p) {
     if (HEDLEY_UNLIKELY(!p->lookahead)) return HEDLEY_NULL;
 
+    sync(p, 1);
     lookaheadlist_t* tmp = p->lookahead;
     p->lookahead = p->lookahead->next;
 
@@ -222,12 +223,32 @@ struct node* parseParameters(parser_t* p) {
         }
     }
 
+    tokenlist_t* tokens = HEDLEY_NULL;
+    if (HEDLEY_UNLIKELY(lt(p, 0) == TPeriod)) {
+        if (HEDLEY_UNLIKELY(lt(p, 1) != TPeriod || lt(p, 2) != TPeriod)) {
+            freeNodeList(&list);
+            return HEDLEY_NULL;
+        }
+
+        tokens = newTokenList();
+        if (HEDLEY_UNLIKELY(tokens == HEDLEY_NULL)) {
+            freeNodeList(&list);
+            return HEDLEY_NULL;
+        }
+
+        if (HEDLEY_UNLIKELY(!addTokenToEnd(tokens, consumeToken(p)) || !addTokenToEnd(tokens, consumeToken(p)) || !addTokenToEnd(tokens, consumeToken(p)))) {
+            freeNodeList(&list);
+            freeTokenList(&tokens);
+            return HEDLEY_NULL;
+        }
+    }
+
     if (HEDLEY_UNLIKELY(!match(p, TRParen))) {
         freeNodeList(&list);
         return HEDLEY_NULL;
     }
 
-    return createNode(NNone, NParameter, HEDLEY_NULL, list);
+    return createNode(NNone, NParameter, tokens, list);
 }
 
 struct node* parseCodeBlock(parser_t* p) {

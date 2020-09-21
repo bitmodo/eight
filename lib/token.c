@@ -52,6 +52,7 @@ bool addTokenToEnd(struct tokenlist* list, struct token* t) {
     tokenlistelement_t* e = malloc(sizeof(tokenlistelement_t));
     if (HEDLEY_UNLIKELY(e == HEDLEY_NULL)) return false;
 
+    memset(e, 0, sizeof(tokenlistelement_t));
     e->value = t;
 
     if (HEDLEY_UNLIKELY(list->first == HEDLEY_NULL)) {

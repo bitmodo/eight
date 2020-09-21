@@ -6,6 +6,7 @@
 
 #include <eight/node.h>
 #include <eight/parser.h>
+#include <eight/codegen.h>
 
 unsigned getEightVersionMajor() {
     return EIGHT_VERSION_MAJOR;
@@ -53,6 +54,16 @@ int compileEight(const char* file, struct compilation c) {
         freeNode(&root);
         return -1;
     }
+
+    codegencontext_t* ctx = initCodegen(c.outfile);
+    if (HEDLEY_UNLIKELY(ctx == HEDLEY_NULL)) {
+        freeNode(&root);
+        return -1;
+    }
+
+    codegen(ctx, root);
+
+    freeCodegenContext(&ctx);
 
     freeNode(&root);
 

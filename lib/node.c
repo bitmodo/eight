@@ -51,6 +51,7 @@ bool addNodeToEnd(struct nodelist* list, struct node* n) {
     nodelistelement_t* e = malloc(sizeof(nodelistelement_t));
     if (HEDLEY_UNLIKELY(e == HEDLEY_NULL)) return false;
 
+    memset(e, 0, sizeof(nodelistelement_t));
     e->value = n;
 
     if (HEDLEY_UNLIKELY(list->first == HEDLEY_NULL)) {
