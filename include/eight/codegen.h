@@ -7,18 +7,34 @@
 
 HEDLEY_BEGIN_C_DECLS
 
-struct node;
-
-typedef struct codegencontext codegencontext_t;
-
-EIGHT_API
-struct codegencontext* initCodegen(const char*);
-
-EIGHT_API
-LLVMValueRef* codegen(struct codegencontext*, struct node*);
+typedef struct cgcontext {
+    LLVMContextRef context;
+    LLVMModuleRef module;
+    LLVMBuilderRef builder;
+} cgcontext_t;
 
 EIGHT_API
-void freeCodegenContext(struct codegencontext**);
+cgcontext_t* allocCodegenContext(const char*);
+
+struct array;
+struct expression;
+struct statement;
+struct structure;
+
+EIGHT_API
+void codegen(cgcontext_t*, struct array*);
+
+EIGHT_API
+LLVMValueRef codegenExpression(cgcontext_t*, struct expression*);
+
+EIGHT_API
+LLVMValueRef codegenStatement(cgcontext_t*, struct statement*);
+
+EIGHT_API
+LLVMValueRef codegenStructure(cgcontext_t*, struct structure*);
+
+EIGHT_API
+void freeCodegenContext(cgcontext_t*);
 
 HEDLEY_END_C_DECLS
 

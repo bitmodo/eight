@@ -14,4 +14,4 @@ subdir('lib')
 subdir('tools')
 
 # Initialize the documentation
-subdir('docs')
+#subdir('docs')

@@ -60,8 +60,8 @@ typedef struct compilation {
     const char* outfile;
 } compilation_t;
 
-EIGHT_API
-int compileEight(const char*, struct compilation);
+// EIGHT_API
+// int compileEight(const char*, struct compilation);
 
 EIGHT_API
 int compileEightFile(const char*, struct compilation);

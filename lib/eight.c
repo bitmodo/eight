@@ -4,9 +4,16 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include <eight/node.h>
-#include <eight/parser.h>
+#include "parser.h"
+#include "lexer.h"
+
+#include <eight/ast/expression.h>
+#include <eight/ast/statement.h>
+#include <eight/ast/structure.h>
+
 #include <eight/codegen.h>
+
+#include <llvm-c/Core.h>
 
 unsigned getEightVersionMajor() {
     return EIGHT_VERSION_MAJOR;
@@ -28,50 +35,6 @@ const char* getEightVersionString() {
     return HEDLEY_STRINGIFY(EIGHT_VERSION_MAJOR) "." HEDLEY_STRINGIFY(EIGHT_VERSION_MINOR) "." HEDLEY_STRINGIFY(EIGHT_VERSION_REVISION);
 }
 
-int compileEight(const char* file, struct compilation c) {
-    if (HEDLEY_UNLIKELY(!file)) {
-        return -1;
-    }
-
-    fprintf(stdout, "Output file: %s\n", c.outfile);
-
-    parser_t* p = newParser();
-    if (HEDLEY_UNLIKELY(!p)) {
-        return -1;
-    }
-
-    prepareParser(p, file);
-
-    // TODO(BSFishy): make sure this parsing logic is correct
-    struct node* root = parseRoot(p);
-    freeParser(&p);
-
-    if (HEDLEY_UNLIKELY(!root)) {
-        return -1;
-    }
-
-    if (HEDLEY_UNLIKELY(!root->children)) {
-        freeNode(&root);
-        return -1;
-    }
-
-    codegencontext_t* ctx = initCodegen(c.outfile);
-    if (HEDLEY_UNLIKELY(ctx == HEDLEY_NULL)) {
-        freeNode(&root);
-        return -1;
-    }
-
-    codegen(ctx, root);
-
-    freeCodegenContext(&ctx);
-
-    freeNode(&root);
-
-    // TODO(BSFishy): do codegen
-
-    return 0;
-}
-
 int compileEightFile(const char* filename, struct compilation c) {
     if (HEDLEY_UNLIKELY(!filename)) {
         return -1;
@@ -83,50 +46,70 @@ int compileEightFile(const char* filename, struct compilation c) {
         return -1;
     }
 
-    // Go to the end of the file, and close the file handle if it fails
-    if (HEDLEY_UNLIKELY(fseek(file, 0, SEEK_END))) {
-        fclose(file);
-        return -1;
-    }
+    // Initialize the scanner
+    yyscan_t scan;
+    yylex_init(&scan);
+    yyset_in(file, scan);
 
-    // Get the current file position, and close the file handle if it fails
-    long fileSize = ftell(file);
-    if (HEDLEY_UNLIKELY(fileSize == -1L)) {
-        fclose(file);
-        return -1;
-    }
+    // Parse the file
+    array_t* tree;
+    do {
+        // If the parser encountered an error, return
+        if (HEDLEY_UNLIKELY(yyparse(scan, &tree) != 0)) {
+            yylex_destroy(scan);
+            fclose(file);
+            return -1;
+        }
+    } while (HEDLEY_UNLIKELY(!feof(file)));
 
-    // Go to the beginning of the file, and close the file handle if it fails
-    if (HEDLEY_UNLIKELY(fseek(file, 0, SEEK_SET))) {
-        fclose(file);
-        return -1;
-    }
-
-    // Allocate a buffer for the file, and close the file handle if it fails
-    char* contents = malloc(fileSize + 1);
-    if (HEDLEY_UNLIKELY(!contents)) {
-        fclose(file);
-        return -1;
-    }
-
-    // Read the entire file into the buffer, and close the file handle if it fails
-    if (HEDLEY_UNLIKELY(fread(contents, 1, fileSize, file) != fileSize)) {
-        fclose(file);
-        return -1;
-    }
-
-    // Close the file handle because we don't need it anymore
+    // Cleanup everything from parsing
+    yylex_destroy(scan);
     fclose(file);
 
-    // Set the last element of the buffer to 0 indicate the end of the string
-    contents[fileSize] = 0;
+    // fprintf(stdout, "size: %zu\n", s->count);
 
-    // Call the compilation function with the file contents
-    int value = compileEight(contents, c);
+    // for (size_t i = 0; i < s->count; i++) {
+    //     structure_t* st = s->value[i];
+    //     fprintf(stdout, "Name: %s\n", st->name);
+    //     switch (st->type) {
+    //         case StctFunction:
+    //             fprintf(stdout, "\tParameters:\n");
+    //             functionparameters_t* params = st->data.function->params;
+    //             for (size_t i = 0; i < params->count; i++) {
+    //                 parameter_t* param = params->array[i];
+    //                 fprintf(stdout, "\t\t%s: %s\n", param->name, param->type.name);
+    //             }
 
-    // Free the previously allocated contents string
-    free(contents);
+    //             fprintf(stdout, "\t\tVariadic: %s\n", params->variadic ? "true" : "false");
+    //             fprintf(stdout, "\tStatements: %zu\n", st->data.function->statementCount);
+
+    //             break;
+    //         default:
+    //             fprintf(stdout, "Unimplemented function\n");
+    //             break;
+    //     }
+
+    //     freeStructure(st);
+    // }
+
+    cgcontext_t* ctx = allocCodegenContext("test");
+    if (HEDLEY_UNLIKELY(ctx == HEDLEY_NULL)) {
+        return -1;
+    }
+
+    codegen(ctx, tree);
+    LLVMDumpModule(ctx->module);
+
+    for (size_t i = 0; i < tree->count; i++) {
+        freeStructure((structure_t*) tree->value[i]);
+    }
+
+    free(tree->value);
+    free(tree);
+
+    freeCodegenContext(ctx);
+    LLVMShutdown();
 
     // Return the return value of the compilation function
-    return value;
+    return 0;
 }

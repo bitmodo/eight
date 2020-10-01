@@ -1,5 +1,5 @@
 func printf(message: i8ptr...)
 
 func main() {
-	printf("Hello world!\n")
+    printf("Hello world!\n")
 }
